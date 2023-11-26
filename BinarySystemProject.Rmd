@@ -1,0 +1,404 @@
+---
+title: "205362815_stats102a_hw4"
+author: "Zongzhen Lee"
+date: "3/7/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+source("205362815_stats102a_hw4.R")
+library(ggplot2)
+library(sloop)
+library(tidyverse)
+library(stringr)
+```
+
+## Question 1: Dealing with Large Numbers
+
+### (a) Create two (p,q) number objects for the following numbers to demonstrate `is_pqnumber()` and `print()`
+
+#### (i) sign = 1, p = 3, q = 4, nums = 1:8
+
+```{r}
+is_pqnumber(pqnumber(sign = 1, p = 3, q = 4, nums = 1:8))
+print(pqnumber(sign = 1, p = 3, q = 4, nums = 1:8))
+```
+
+#### (ii) sign = 1, p = 6, q = 0, nums = c(3,9,5,1,4,1,3)
+
+```{r}
+is_pqnumber(pqnumber(sign = 1, p = 6, q = 0, nums = c(3,9,5,1,4,1,3)))
+print(pqnumber(sign = 1, p = 6, q = 0, nums = c(3,9,5,1,4,1,3)))
+```
+
+#### (iii) sign = -1, p = 5, q = 1, nums = c(2,8,2,8,1,7,2)
+
+```{r}
+is_pqnumber(pqnumber(sign = -1, p = 5, q = 1, nums = c(2,8,2,8,1,7,2)))
+print(pqnumber(sign = -1, p = 5, q = 1, nums = c(2,8,2,8,1,7,2)))
+```
+
+#### (iv) tests for `as_pqnumber` and `as_numeric`
+
+```{r}
+as_pqnumber(x = 3.14, p = 3, q = 4)
+as_pqnumber(x = 87654.321, p = 3, q = 4)
+as_numeric(pqnumber(sign = 1, p = 6, q = 0, nums = c(3,9,5,1,4,1,3)))
+as_numeric(pqnumber(sign = -1, p = 5, q = 1, nums = c(2,8,2,8,1,7,2)))
+```
+
+### (b) Addition and Subtraction
+
+#### addition pseudocode
+
+```{r, tidy=FALSE, eval=FALSE, highlight=FALSE}
+The following program `+` adds two pq numbers, argument `x` and `y`, together and the otuput prints in pq number
+
+#check if x and y are pq numbers
+IF (class of x or y is not pqnumber)
+  THEN STOP (inputs x and y need to be pqnumbers)
+ENDIF
+#case 1: x and y are both positive or x and y are both negative
+IF (x*y > 0)
+  DIM sign as 1
+  DIM x_nums as x$nums
+  DIM y_nums as y$nums
+  DIM sum as numeric(0)
+  FOR (i in length of x_nums)
+    IF x_nums + y_nums <= 9
+      THEN DIM sum as vector c(sum, x_nums[i] + y_nums[i])
+    ELSE
+      THEN DIM sum as vector(sum, remainder of x_nums[i]+y_nums[i])
+           DIM x_nums[i+1] as x_nums[i+1] + 1
+    ENDIF
+  ENDFOR
+ENDIF
+#case 2: x is positive and y is negative
+IF (x is positve and y is negative)
+  #x is larger than y
+  DIM sign as 1
+  DIM x_nums as x$nums
+  DIM y_nums as y$nums
+  DIM sum as numeric(0)
+  FOR (i in length of x_nums)
+    IF (x_nums[i] - y_nums[i] < 0)
+      DIM x_nums[i+1] as x_nums[i+1] - 1
+      DIM sum as vector c(sum, x_nums[i] + 10 - y_nums[i])
+    ENDIF
+    IF (x_nums[i] - y_nums[i] >= 0)
+      DIM sum as vector c(sum, x_nums[i] - y_nums[i])
+    ENDIF
+  ENDFOR
+# case 3: s is negative and y is positive
+ELSE
+  DIM sign as -1
+  DIM x_nums as x$nums
+  DIM y_nums as y$nums
+  DIM sum as numeric(0)
+  FOR (i in length(x_nums))
+    IF (y_nums[i] - x_nums[i]) < 0) 
+      THEN DIM y_nums[i+1] as y_nums[i+1]-1
+           DIM sum as vector c(sum, y_nums[i] + 10 - x_nums[i])
+    ENDIF
+    IF (y_nums[i] - x_nums[i]) >= 0)
+      THEN DIM sum as vector c(sum, y_nums[i] - x_nums[i])
+    ENDIF
+  ENDFOR
+ENDIF
+# test for overflow
+IF (there exists any NA in x_nums)
+  THEN WARNING("an overflow")
+ENDIF
+PRINT resulting pqnumber with nums = sum
+```
+
+#### subtraction pseudocode
+
+```{r, tidy=FALSE, eval=FALSE, highlight=FALSE}
+The following program `-` subtracts two pq numbers, arguments `x` and `y`, together and prints in pqnumber
+#check if x and y are pq numbers
+IF (class of x or y is not pqnumber)
+  THEN STOP (inputs x and y need to be pqnumbers)
+ENDIF
+#case 1: x and y positive numbers
+IF (x and y are both positive)
+  THEN DIM sign as 1
+    DIM x_nums as x$nums
+    DIM y_nums as y$nums
+    DIM sub as numeric(0)
+    FOR (i in length of x_nums)
+      IF (x_nums[i] - y_nums[i]) < 0)
+        THEN DIM x_nums[i+1] as x_nums[i+1]-1
+        DIM sub as vector c(sub,x_nums[i] + 10 - y_nums[i])
+      ENDIF
+      ELSE
+        DIM sub as vector c(sub, x_nums[i] - y_nums[i])
+      ENDIF
+    ENDFOR
+#case 2: x and y are negative
+ELSE
+  THEN DIM sign as -1
+    DIM x_nums as x$nums
+    DIM y_nums as y$nums
+    DIM sub as numeric(0)
+    FOR (i in length(x_nums))
+      IF(x_nums[i] - y_nums[i]) < 0)
+        THEN DIM x_nums[i+1] as x_nums[i+1]-1
+        DIM sub as vector c(sub, x_nums[i] + 10 - y_nums[i])
+      ENDIF
+      ELSE
+        DIM sub as vector c(sub, x_nums[i] - y_nums[i])
+      ENDIF
+    ENDFOR
+ENDIF
+#case 3: x is negative and y is positive
+IF (x is negative and y is positive)
+  THEN DIM sign as -1
+    DIM x_nums as x$nums
+    DIM y_nums as y$nums
+    DIM sub as numeric(0)
+  FOR (i in length(x$nums))
+    IF (x_nums[i] + y_nums[i]) <= 9)
+      THEN DIM sub as vector c(sub, x_nums[i] + y_nums[i])
+    ENDIF
+    IF (x_nums[i] + y_nums[i]) > 9)
+      THEN DIM sub as vector c(sub, (x_nums[i]+y_nums[i]) %% 10)
+        DIM x_nums[i+1] as x_nums[i+1]+1
+      ENDIF
+    ENDIF
+  ENDFOR
+#test for overflow
+IF (there exists any NA in x_nums)
+  THEN WARNING("an overflow")
+ENDIF
+PRINT resulting pq number with nums = sub
+```
+
+#### (i) addition test case 1
+
+```{r}
+x <- pqnumber(sign = 1, p = 5, q = 4,  
+              nums = c(1, 1, 1, 1, 1, 1, 1, 1, 1, 1))
+y <- pqnumber(sign = 1, p = 5, q = 4,
+              nums = c(2, 3, 4, 5, 6, 6, 5, 4, 3, 2))
+`+`(x, y)
+```
+
+#### (ii) addition test case 2
+
+```{r}
+x <- pqnumber(sign = 1, p = 5, q = 5,  
+                   nums = c(0, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0))
+y <- pqnumber(sign = 1, p = 5, q = 5,
+              nums = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 0))
+`+`(x, y)
+```
+
+#### (iii) addition test case 3
+
+```{r}
+x <- pqnumber(sign = 1, p = 5, q = 4,
+              nums = c(0, 9, 8, 7, 6, 5, 4, 3, 2, 1))
+y <- pqnumber(sign = 1, p = 5, q = 4, 
+              nums = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 9))
+`+`(x, y)
+```
+
+#### (iv) subtraction test case 1
+
+```{r}
+x <- pqnumber(sign = 1, p = 3, q = 3,
+              nums = c(5, 0, 4, 3, 0, 2, 9))
+y <- pqnumber(sign = 1, p = 3, q = 3,
+              nums = c(9, 0, 8, 7, 0, 6, 0))
+`-`(x, y)
+```
+
+#### (v) subtraction test case 2
+
+```{r}
+x <- pqnumber(sign = -1, p = 2, q = 6,
+              nums = c(0, 5, 9, 8, 7, 6, 5, 4, 3))
+y <- pqnumber(sign = -1, p = 2, q = 6, 
+              nums = c(8, 7, 6, 5, 4, 3, 2, 0, 0))
+`-`(x, y)
+```
+
+#### (vi) subtraction test case 3
+
+```{r}
+x <- pqnumber(sign = -1, p = 0, q = 4,
+              nums = c(5, 4, 3, 2, 1))
+y <- pqnumber(sign = 1, p = 0, q = 4, 
+              nums = c(9, 9, 9, 9, 9))
+`-`(x, y)
+```
+
+
+### (c) multiplication
+
+### multiplication pseudocode
+
+```{r, tidy=FALSE, eval=FALSE, highlight=FALSE}
+The following program `*` takes into two pqnumbers, argument `x` and `y`, and multiply them to print in pqnumber
+# multiply x and y without adjustment
+DIM mat as a matrix with number row = length(y$nums) and number column = length(x$nums)
+FOR (i in length(y$nums))
+  FOR (j in length(x$nums))
+    DIM mat[i,j] as y$nums[i]*x$nums[j]
+  ENDFOR
+ENDFOR
+# adjust matrix for each row down, add a zero
+DIM adj_mat as matrix with number row = length(y$nums) and number column = 2*length(x$nums)-1
+# add first column into adj_matrix
+DIM adj_mat[1, ] as vector c(mat[1,], rep(0,length(x$nums)-1))
+FOR (i in length(x$nums)-1)
+  DIM adj_mat[1+i, ] as vector c(rep(0,i),mat[1+i,],rep(0,length(x$nums)-(1+i))
+ENDFOR
+DIM nums as extract head with zeros and return first p+q+1 elements
+IF (both x and y are positive)
+  THEN DIM sign as 1
+ENDIF
+IF (both x and y are negative)
+  THEN DIM sign as 1
+ENDIF
+IF (x is negative and y is positve)
+  THEN DIM sign as -1
+ENDIF
+IF (x is positive and y is negative)
+  THEN DIM sign as -1
+ENDIF
+PRINT resulting pqnumber with nums = nums
+```
+
+#### (i) multiplication test case 1
+
+```{r}
+x <- pqnumber(sign = 1, p = 3, q = 2, nums = c(0, 2, 0, 2, 0, 0))
+y <- pqnumber(sign = 1, p = 3, q = 2, nums = c(1, 2, 0, 2, 0, 0))
+`*`(x, y)
+```
+
+#### (ii) multiplication test case 2
+
+```{r}
+x <- pqnumber(sign = -1, p = 2, q = 2, nums = c(0, 0, 0, 5, 0))
+y <- pqnumber(sign = 1, p = 2, q = 2, nums = c(1, 0, 0, 2, 0))
+`*`(x, y)
+```
+
+#### (iii) multiplication test case 3
+
+```{r}
+x <- pqnumber(sign = -1, p = 7, q = 1, nums = c(6, 2, 9, 5, 1, 4, 1, 4, 0))
+y <- pqnumber(sign = -1, p = 7, q = 1, nums = c(0, 0, 0, 0, 0, 0, 0, 2, 1))
+`*`(x, y)
+```
+
+## Question 2: Root Finding
+
+### (a) Write `square_root` function computes the square root of an arbitrary positive number
+
+The following id a pseudocode for the function `square_root`
+```{r, tidy=FALSE, eval=FALSE, highlight=FALSE}
+This program square_root() impute the square root of an arbitrary positive number using Newtons Method. Arguments `tol` determines when you consider two iterates to be equal, `iter_max` gives the maximum number of iterations, and `verbose` determines if you want to display intermediate results
+
+DIM `x` as `a`
+DIM `x_2` as `a`
+DIM `num` as numeric(0)
+DIM `num_2` as numeric(0)
+DIM FUNCTION `f` with argument `x`
+  RETURN x^2 - a
+WHILE absolute value of `f`(x_2) is greater than `tol`
+  DIM `x_2` as 0.5 * (x_2 + a / x_2)
+  DIM `num_2` as a numeric string includes all the `x_2` values from each loop
+END WHILE
+FOR i in the length of `iter_max`
+  DIM `x` as 0.5 * (x + a / x)
+  DIM `num` as a numeric string includes all the `num` values from each loop
+END FOR
+IF length of `num` is less than `num_2`
+  IF `verbose` is TRUE
+    RETURN `num`
+  ELSE
+    RETURN min value of `num`
+  ENDIF
+ELSE
+    IF `verbose` is TRUE
+    RETURN `num`
+  ELSE
+    RETURN min value of `num`
+  ENDIF
+ENDIF
+```
+
+### (b) Compute the square root of 5
+
+```{r}
+square_root(a = 5)
+```
+
+### (c) Motify `square_root` function to compute arbitary root
+
+The following shows mathematically how we modify function to determine an appropriate iterative equation for approximating this arbitrary root.
+
+```{r, tidy=FALSE, eval=FALSE, highlight=FALSE}
+Using Newtons Method, starting with an intial point we find the tangent line of this point and where ever this line reaches x = 0, we use this as our new point to find another tangent line and repeat the same process, the linear approximation will get closer to root of the function.
+Iterative equation for approximating arbitrary root is
+  x_n+1 = x_n - f(x_n) / f_prime(x_n)
+```
+
+### (d) Write a function `nth_root` which calculates the arbitrary root of a number
+
+The following is a pseudocode for function `nth_root`
+```{r, tidy=FALSE, eval=FALSE, highlight=FALSE}
+This program nth_root() impute the `n` arbitrary nth root of an `a` arbitrary positive number using Newtons Method. Arguments `tol` determines when you consider two iterates to be equal, `iter_max` gives the maximum number of iterations, and `verbose` determines if you want to display intermediate results
+
+IF `n` equals to 0
+  THEN exits function as the 0th root of any number is undefined uncomputable
+ENDIF
+IF `n` equals to 1
+  RETURN `a`
+ENDIF
+DIM `x` as `a`
+DIM `x_2` as `a`
+DIM `num` as numeric(0)
+DIM `num_2` as numeric(0)
+DIM FUNCTION `f` with argument `x`
+  RETURN x^n - a
+WHILE absolute value of `f`(x_2) is greater than `tol`
+  DIM x_2 as (n - 1) / n * x_2 + a / (n * x_2^(n - 1))
+  DIM num_2 as a numeric string includes all the x_2 values from each loop
+END WHILE
+FOR i in the length of `iter_max`
+  DIM `x` as (n - 1) / n * x + a / (n * x^(n - 1))
+  DIM num as a numeric string includes al the x values from each loop
+END FOR
+IF length of `num` is less than `num_2`
+  IF `verbose` is TRUE
+    RETURN `num`
+  ELSE
+    RETURN min value of `num`
+  ENDIF
+ELSE
+    IF `verbose` is TRUE
+    RETURN `num`
+  ELSE
+    RETURN min value of `num`
+  ENDIF
+ENDIF
+```
+
+### (e) Compute the fifth root of 7 using Newton's Method.
+
+```{r}
+nth_root(a = 5, iter_max = 20, n = 7)
+```
+
+### (f) Print e1, e2, e3, e4 for the fifth root of 7 using Newton's Method.
+
+```{r}
+abs(nth_root(a=5, n=7, verbose = TRUE)[1:4] - nth_root(a=5, n=7))
+```
+What is noted from the result is that the error between the fifth root of 7 computed from part (e) is gradually decreasing as more iterations are done and computed through Newton's Method. Slowly approaching and converging to the actual value. We can therefore say the function converges using Newton's Raphson Method.
