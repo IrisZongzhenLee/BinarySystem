@@ -1,5 +1,5 @@
 ---
-title: "205362815_stats102a_hw4"
+title: "Binary Number System and its Arithmatic and Root Functions"
 author: "Zongzhen Lee"
 date: "3/7/2021"
 output: html_document
@@ -7,14 +7,14 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-source("205362815_stats102a_hw4.R")
+source("projectfunctions.R")
 library(ggplot2)
 library(sloop)
 library(tidyverse)
 library(stringr)
 ```
 
-## Question 1: Dealing with Large Numbers
+## Dealing with Large Numbers
 
 ### (a) Create two (p,q) number objects for the following numbers to demonstrate `is_pqnumber()` and `print()`
 
@@ -296,7 +296,7 @@ y <- pqnumber(sign = -1, p = 7, q = 1, nums = c(0, 0, 0, 0, 0, 0, 0, 2, 1))
 `*`(x, y)
 ```
 
-## Question 2: Root Finding
+## Root Finding
 
 ### (a) Write `square_root` function computes the square root of an arbitrary positive number
 
