@@ -26,7 +26,3 @@ This project emphasizes:
 - Manual carry / borrow handling
 - Root computation using iterative logic
 - Functional decomposition and reuse
-
----
-
-## 📂 Repository Structure
